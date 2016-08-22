@@ -23,11 +23,6 @@ class WhatsappBot{
 
     // Create a instance of WhatsProt class.
     $this->w = new WhatsProt($username, $nickname, $debug, $log);
-    //Print when the user goes online/offline (you need to bind a function to the event onPressence
-    //so the script knows what to do)
-    $this->w->eventManager()->bind('onPresenceAvailable', '$this->onPresenceAvailable()');
-    $this->w->eventManager()->bind('onPresenceUnavailable', '$this->onPresenceUnavailable()');
-    $this->w->eventManager()->bind('onGetSyncResult', '$this->onSyncResult()');
   }
 
   function requestCode(){
@@ -45,6 +40,7 @@ class WhatsappBot{
   function login($password){
     $this->w->connect(); // Connect to WhatsApp network
     $this->w->loginWithPassword($password); // logging in with the password we got!
+    $this->w->sendSetProfilePicture("/usr/share/php/whatsappbot/whatsappbot/src/model/profile.png");
   }
 
   function readMessages(){
@@ -55,25 +51,13 @@ class WhatsappBot{
     $numbers = array($target);
     $this->w->sendSync($numbers);
     $this->w->sendMessage($target, $message);
+    while ($this->w->pollMessage());
   }
 
-  function onPresenceAvailable($username, $from){
-      $dFrom = str_replace(['@s.whatsapp.net', '@g.us'], '', $from);
-      echo "<$dFrom is online>\n\n";
-  }
-
-  function onPresenceUnavailable($username, $from, $last){
-      $dFrom = str_replace(['@s.whatsapp.net', '@g.us'], '', $from);
-      echo "<$dFrom is offline> Last seen: $last seconds\n\n";
-  }
-
-  function onSyncResult($result){
-    foreach ($result->existing as $key => $value) {
-      echo "$value exists";
-    }
-    foreach ($result->nonExisting as $key => $value) {
-      echo "$value does not exists";
-    }
-    die(); //to break out of the while(true) loop
+  function sendImage($to, $imagePath){
+    $numbers = array($to);
+    $this->w->sendSync($numbers);
+    $this->w->sendMessageImage($to, $imagePath);
+    while ($this->w->pollMessage());
   }
 }
